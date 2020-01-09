@@ -48,6 +48,7 @@ public class Controller {
     public CompletableFuture<String> getUserUsingWithCFAndJavaClient(@RequestParam long delay) {
         return sendRequestWithJavaHttpClient(delay).thenApply(x -> "completable-future-java-client: " + x);
     }
+
     @GetMapping(value = "/completable-future-apache-client")
     public CompletableFuture<String> getUserUsingWithCFAndApacheClient(@RequestParam long delay) {
         return sendRequestWithApacheHttpClient(delay).thenApply(x -> "completable-future-apache-client: " + x);
@@ -81,7 +82,7 @@ public class Controller {
     private CompletableFuture<String> sendRequestWithApacheHttpClient(long delay) {
         CompletableFuture<org.apache.http.HttpResponse> cf = new CompletableFuture<>();
         FutureCallback<org.apache.http.HttpResponse> callback = new HttpResponseCallback(cf);
-        HttpUriRequest request = new HttpGet(userServiceHost+"/user/?delay="+delay);
+        HttpUriRequest request = new HttpGet(userServiceHost + "/user/?delay=" + delay);
         apacheClient.execute(request, callback);
         return cf.thenApply(response -> {
             try {
