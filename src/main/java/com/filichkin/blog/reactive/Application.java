@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import reactor.core.publisher.ConnectableFlux;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class Application {
 
     public static void main(String[] args) {
 
-        // Application app = new Application();
+        reactorCoreShowCase();
 
         SpringApplication.run(Application.class, args);
 
@@ -30,17 +31,23 @@ public class Application {
         // Hot Stream
         List<Integer> elements = new ArrayList<>();
 
-        ConnectableFlux<Object> publish = Flux.create(fluxSink -> {
+        ConnectableFlux<Object> publisher = Flux.create(fluxSink -> {
             while(true) {
                 fluxSink.next(System.currentTimeMillis());
             }
-        }).publish();
+        })
+                .sample(Duration.ofMillis(100))
+                .log()
+                .publishOn(Schedulers.parallel())
+                .publish();
 
-        publish.subscribe(System.out::println);
-        publish.subscribe(System.out::println);
+//        publisher.subscribeOn(Schedulers.parallel());
+        // publisher.subscribeOn(Schedulers.newSingle("thread-e1"));
+        publisher.subscribeOn(Schedulers.newParallel("pool", 5)).subscribe(o -> log.info(String.format("#1: %s", o)));
+//        publisher.subscribe(o -> log.info(String.format("#2: %s", o)));
 
         // This is blocking, should be added to another thread
-        publish.connect();
+        publisher.connect();
 
         Mono.just(1)
                 .log()
