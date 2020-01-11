@@ -1,6 +1,5 @@
 package com.filichkin.blog.reactive;
 
-import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -35,24 +34,29 @@ public class Application {
         private final Listener listener;
 
         public PriceTickerDataFeeder(Listener listener) {
-            this.listener = listener;    
+            this.listener = listener;
+            setName("datafeeder-1");
         }
 
         // Implement the backpressure from the data source
         // Something like Kafka Consumer's Polling Thread
         public void run() {
             int count = 1;
-            while (true){
-                String e = "#" + (count++) +" @: " + System.currentTimeMillis();
-                log.info("1.GENERATE: " + e);
-                listener.onData(e);
 
-                try {
+            try {
+
+                while ((++count) < 10) {
+                    String e = "#" + (count++) + " @: " + System.currentTimeMillis();
+                    log.info("1.GENERATE: " + e);
+                    listener.onData(e);
+
                     sleep(100);
-                } catch (InterruptedException ex) {
-                    log.error("Thread interrupted:", ex);
-                    break;
                 }
+
+                listener.onComplete();
+
+            } catch (Exception e) {
+                log.error("Quit the loop!", e);
             }
         }
 
@@ -61,6 +65,10 @@ public class Application {
 
     interface Listener {
         void onData(String data);
+
+        void onComplete();
+
+        void onError(Throwable throwable);
     }
 
     public static PriceTickerDataFeeder getPriceTickerDataFeeder() {
@@ -104,15 +112,20 @@ public class Application {
             Listener dataListener = new Listener() {
 
                 int count = 0;
+
                 @Override
                 public void onData(String data) {
                     fluxSink.next(data);
+                }
 
-                    count++;
+                @Override
+                public void onComplete() {
+                    fluxSink.complete();
+                }
 
-                    if (count> 7) {
-                        fluxSink.complete();
-                    }
+                @Override
+                public void onError(Throwable throwable) {
+
                 }
             };
 
