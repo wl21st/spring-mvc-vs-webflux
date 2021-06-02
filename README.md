@@ -19,12 +19,18 @@ Compare Performance for Rest Service that proxies request to underline Rest serv
 
 ### Test
 
-Type `mvn gatlin:test` to run the performance test
+Type `mvn gatlin:test` to run the gatling performance test without visible results.
 
 ### Run Test Once
 
-Type `mvn clean install -P servlet && java -jar target/spring-mvc-vs-webflux-0.0.1-SNAPSHOT.jar &  sleep 7 && mvn gatling:test && kill %1`     
+Type `kill %1 & mvn clean install -P servlet && java -Xmx4g -jar target/spring-mvc-vs-webflux-0.0.1-SNAPSHOT.jar &  sleep 7 && mvn gatling:test && kill %1`     
 
+NOTE
+
+1. To use ZGC, please add `-XX:+UseZGC` to the command.
+1. The default heap of 1GB to run the Microservice will cause response error.
+1. Heap of 2GB is required to eliminate the request errors.  Otherwise, it will have 0.1% of failure rate.
+1. Linux is a better platform to run the service than Mac, there is no error in the Linux env vs <1% of error rate like socket closed.
 
 ## Summary
 
