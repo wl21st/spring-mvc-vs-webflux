@@ -33,6 +33,6 @@ class BootLoadSimulation extends Simulation {
   private val completableFutureTestScenario = scenario("BootLoadSimulation")
     .exec(completableFutureTest)
 
-  setUp(webfluxScenario.inject(atOnceUsers(1000))).protocols(httpConf)
+//  setUp(webfluxScenario.inject(atOnceUsers(1000))).protocols(httpConf)
   setUp(completableFutureTestScenario.inject(atOnceUsers(1000))).protocols(httpConf)
 }
