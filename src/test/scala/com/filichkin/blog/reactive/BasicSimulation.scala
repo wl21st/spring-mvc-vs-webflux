@@ -34,5 +34,9 @@ class BootLoadSimulation extends Simulation {
     .exec(completableFutureTest)
 
 //  setUp(webfluxScenario.inject(atOnceUsers(1000))).protocols(httpConf)
-  setUp(completableFutureTestScenario.inject(atOnceUsers(1000))).protocols(httpConf)
+  setUp(completableFutureTestScenario.inject(atOnceUsers(1000))).protocols(httpConf).assertions(
+    global.responseTime.percentile(99).lt(1000),
+    global.failedRequests.percent.lte(0),
+    global.successfulRequests.percent.gt(99.9)
+  )
 }
